@@ -3,6 +3,7 @@
 A simple currency converter to check the current exchange rates between two currencies
 
 *Powered by [Exchange Rates API](https://exchangeratesapi.io/)*
+
 *Coded with React and React Bootstrap*
 
 ## Getting Started
