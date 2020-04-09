@@ -50,7 +50,7 @@ export default class CurrencyForm extends Component {
 			rate = CONVERSION_RATES_STORAGE[storageKey];
 			result = amount * CONVERSION_RATES_STORAGE[storageKey];
 
-			this.setState({ rate, result });
+			this.setState({ rate, result, conversionRequested: true });
 		} else {
 			fetch(getConversionApiUrl(base, target))
 				.then(res => res.json())
@@ -59,12 +59,10 @@ export default class CurrencyForm extends Component {
 					result = amount * rate;
 					CONVERSION_RATES_STORAGE[storageKey] = rate;
 
-					this.setState({ rate, result });
+					this.setState({ rate, result, conversionRequested: true });
 				})
-				.catch(error => this.setState({ error }));
+				.catch(error => this.setState({ error, conversionRequested: true }));
 		}
-
-		this.setState({ conversionRequested: true });
 	}
 
 	render() {
