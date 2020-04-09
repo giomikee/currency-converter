@@ -26,13 +26,17 @@ export default class CurrencyForm extends Component {
 			amount: '',
 			base: '',
 			target: '',
+			conversionRequested: false,
 			rate: null,
 			result: null,
 			error: null
 		};
 	}
 	handleChange = event => {
-		this.setState({ [event.target.name]: event.target.value });
+		this.setState({
+			[event.target.name]: event.target.value,
+			conversionRequested: false
+		});
 	}
 	fetchConversion = event => {
 		event.preventDefault();
@@ -59,11 +63,13 @@ export default class CurrencyForm extends Component {
 				})
 				.catch(error => this.setState({ error }));
 		}
+
+		this.setState({ conversionRequested: true });
 	}
 
 	render() {
 		const { currencies } = this.props,
-			{ amount, base, target, rate, result, error } = this.state;
+			{ amount, base, target, rate, result, error, conversionRequested } = this.state;
 
 		return (
 			<>
@@ -105,14 +111,14 @@ export default class CurrencyForm extends Component {
 						</Form.Group>
 						<Form.Group as={Col} sm='2' controlId='submit' className='m-sm-auto'>
 							<Button variant="primary" type="submit" block>
-							Submit
+							Convert
 							</Button>
 						</Form.Group>
 					</Form.Row>
 				</Form>
 				<Row className='p-sm-2'>
 					{
-						error &&
+						conversionRequested && error &&
 							<Col sm='12'>
 								<Alert variant='danger'>
 									{error.message}
@@ -121,7 +127,7 @@ export default class CurrencyForm extends Component {
 					}
 
 					{
-						result &&
+						conversionRequested && result &&
 						<>
 							<Col sm='6'>
 								<ConversionRate rate={rate} base={base} target={target} />
