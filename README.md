@@ -14,6 +14,10 @@ A simple currency converter to check the current exchange rates between two curr
 
 ## Getting Started
 
+### In production
+Try out the application in production by opening https://giomikee.github.io/currency-converter/
+
+### In local
 Clone the repository to your machine by running:
 ```bash
 git clone https://github.com/giomikee/currency-converter
