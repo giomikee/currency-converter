@@ -9,7 +9,7 @@
 import React, { Component } from 'react';
 import { API_PREFIX, CONVERSION_RATES_STORAGE } from '../constants';
 import Form from 'react-bootstrap/Form';
-import { Col, Row, Button, Alert } from 'react-bootstrap';
+import { Col, Row, Alert } from 'react-bootstrap';
 import ConversionRate from './ConversionRate';
 import ConversionResult from './ConversionResult';
 
@@ -26,20 +26,23 @@ export default class CurrencyForm extends Component {
 			amount: '',
 			base: '',
 			target: '',
-			conversionRequested: false,
 			rate: null,
 			result: null,
 			error: null
 		};
 	}
 	handleChange = event => {
-		this.setState({
-			[event.target.name]: event.target.value,
-			conversionRequested: false
-		});
+		this.setState(
+			{ [event.target.name]: event.target.value },
+			() => {
+				const { base, target, amount } = this.state;
+
+				base && target && amount && this.fetchConversion();
+			}
+		);
 	}
 	fetchConversion = event => {
-		event.preventDefault();
+		event && event.preventDefault();
 
 		const { base, target, amount } = this.state;
 		const storageKey = `${base}-${target}`;
@@ -50,7 +53,7 @@ export default class CurrencyForm extends Component {
 			rate = CONVERSION_RATES_STORAGE[storageKey];
 			result = amount * CONVERSION_RATES_STORAGE[storageKey];
 
-			this.setState({ rate, result, conversionRequested: true });
+			this.setState({ rate, result });
 		} else {
 			fetch(getConversionApiUrl(base, target))
 				.then(res => res.json())
@@ -59,15 +62,15 @@ export default class CurrencyForm extends Component {
 					result = amount * rate;
 					CONVERSION_RATES_STORAGE[storageKey] = rate;
 
-					this.setState({ rate, result, conversionRequested: true });
+					this.setState({ rate, result });
 				})
-				.catch(error => this.setState({ error, conversionRequested: true }));
+				.catch(error => this.setState({ error }));
 		}
 	}
 
 	render() {
 		const { currencies } = this.props,
-			{ amount, base, target, rate, result, error, conversionRequested } = this.state;
+			{ amount, base, target, rate, result, error } = this.state;
 
 		return (
 			<>
@@ -95,7 +98,7 @@ export default class CurrencyForm extends Component {
 								{showCurrencies(currencies, 'base')}
 							</Form.Control>
 						</Form.Group>
-						<Form.Group as={Col} sm='4' controlId='target'>
+						<Form.Group as={Col} sm='6' controlId='target'>
 							<Form.Label>Convert to:</Form.Label>
 							<Form.Control
 								required
@@ -107,33 +110,25 @@ export default class CurrencyForm extends Component {
 								{showCurrencies(currencies, 'target')}
 							</Form.Control>
 						</Form.Group>
-						<Form.Group as={Col} sm='2' controlId='submit' className='m-sm-auto'>
-							<Button variant="primary" type="submit" block>
-							Convert
-							</Button>
-						</Form.Group>
 					</Form.Row>
 				</Form>
 				<Row className='p-sm-2'>
 					{
-						conversionRequested && error &&
+						error ?
 							<Col sm='12'>
 								<Alert variant='danger'>
 									{error.message}
 								</Alert>
 							</Col>
-					}
-
-					{
-						conversionRequested && result &&
-						<>
-							<Col sm='6'>
-								<ConversionRate rate={rate} base={base} target={target} />
-							</Col>
-							<Col sm='6'>
-								<ConversionResult result={result} target={target} />
-							</Col>
-						</>
+							: result &&
+							<>
+								<Col sm='6'>
+									<ConversionRate rate={rate} base={base} target={target} />
+								</Col>
+								<Col sm='6'>
+									<ConversionResult result={result} target={target} />
+								</Col>
+							</>
 					}
 				</Row>
 			</>
