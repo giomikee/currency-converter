@@ -9,14 +9,18 @@
 import React, { Component } from 'react';
 import { API_PREFIX, CONVERSION_RATES_STORAGE } from '../constants';
 import Form from 'react-bootstrap/Form';
-import { Col, Row, Alert } from 'react-bootstrap';
+import { Col, Row, Alert, Button } from 'react-bootstrap';
 import ConversionRate from './ConversionRate';
 import ConversionResult from './ConversionResult';
 
+const NULL_OPTION = <option></option>;
+
 const getConversionApiUrl = (base, target) => `${API_PREFIX}?base=${base}&symbols=${target}`;
 
-const showCurrencies = (currencies, keyPrefix) =>
-	currencies.map(currency => <option value={currency} key={`${keyPrefix}${currency}`}>{currency}</option>);
+const showCurrencies = (currencies, keyPrefix) => [
+	Object.assign({}, NULL_OPTION, { key: `${keyPrefix}Null` }),
+	...currencies.map(currency => <option value={currency} key={`${keyPrefix}${currency}`}>{currency}</option>)
+];
 
 export default class CurrencyForm extends Component {
 	constructor(props) {
@@ -40,6 +44,14 @@ export default class CurrencyForm extends Component {
 				base && target && amount && this.fetchConversion();
 			}
 		);
+	}
+	swapCurrencies = () => {
+		const { base, target } = this.state;
+
+		this.setState({
+			base: target,
+			target: base
+		}, this.fetchConversion);
 	}
 	fetchConversion = event => {
 		event && event.preventDefault();
@@ -70,7 +82,8 @@ export default class CurrencyForm extends Component {
 
 	render() {
 		const { currencies } = this.props,
-			{ amount, base, target, rate, result, error } = this.state;
+			{ amount, base, target, rate, result, error } = this.state,
+			isSwapEnabled = amount && base && target;
 
 		return (
 			<>
@@ -94,11 +107,20 @@ export default class CurrencyForm extends Component {
 								name='base'
 								value={base}
 								onChange={this.handleChange}>
-								<option value=''></option>
 								{showCurrencies(currencies, 'base')}
 							</Form.Control>
 						</Form.Group>
-						<Form.Group as={Col} sm='6' controlId='target'>
+						<Form.Group as={Col} sm='1' controlId='swap' className='m-sm-auto'>
+							<Button
+								onClick={this.swapCurrencies}
+								variant='secondary'
+								size='sm'
+								disabled={!isSwapEnabled}
+								block>
+								⇄
+							</Button>
+						</Form.Group>
+						<Form.Group as={Col} sm='5' controlId='target'>
 							<Form.Label>Convert to:</Form.Label>
 							<Form.Control
 								required
@@ -106,7 +128,6 @@ export default class CurrencyForm extends Component {
 								name='target'
 								value={target}
 								onChange={this.handleChange}>
-								<option value=''></option>
 								{showCurrencies(currencies, 'target')}
 							</Form.Control>
 						</Form.Group>
