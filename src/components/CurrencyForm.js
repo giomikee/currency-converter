@@ -22,6 +22,8 @@ const showCurrencies = (currencies, keyPrefix) => [
 	...currencies.map(currency => <option value={currency} key={`${keyPrefix}${currency}`}>{currency}</option>)
 ];
 
+const calculateConversion = (amount, rate) => amount * rate;
+
 export default class CurrencyForm extends Component {
 	constructor(props) {
 		super(props);
@@ -63,7 +65,7 @@ export default class CurrencyForm extends Component {
 
 		if (CONVERSION_RATES_STORAGE[storageKey]) {
 			rate = CONVERSION_RATES_STORAGE[storageKey];
-			result = amount * CONVERSION_RATES_STORAGE[storageKey];
+			result = calculateConversion(amount, rate);
 
 			this.setState({ rate, result });
 		} else {
@@ -71,7 +73,7 @@ export default class CurrencyForm extends Component {
 				.then(res => res.json())
 				.then(data => {
 					rate = data.rates[target];
-					result = amount * rate;
+					result = calculateConversion(amount, rate);
 					CONVERSION_RATES_STORAGE[storageKey] = rate;
 
 					this.setState({ rate, result });
